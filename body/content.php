@@ -1,40 +1,57 @@
 <?php
-
 if (isset($_SESSION['id'])) {
 } else {
     header('Location:index.php');
 }
 $result = null;
-function sorting($sortingPage = null)
+
+$limit = 3;
+$totalRows = null;
+$initial_page = null;
+
+if (isset($_GET['dept'])) {
+    $dept_get_id = $_GET['dept'];
+    $simpleQuery = "SELECT * FROM student1,department where student1.dept_id='$dept_get_id' AND department.dept_id=student1.dept_id";
+    $resultNonPage = WebContent::executeQuery($simpleQuery);
+    $totalRows = mysqli_num_rows($resultNonPage);
+} else {
+    $simpleQuery = "SELECT * FROM student1,department where student1.dept_id=department.dept_id ";
+    $resultNonPage = WebContent::executeQuery($simpleQuery);
+    $totalRows = mysqli_num_rows($resultNonPage);
+
+}
+
+
+function sorting($sortingPage = null, $initial_page, $limit)
 {
     $result = null;
     print_r($sortingPage);
     if (isset($sortingPage)) {
         if (isset($_POST['idAsc'])) {
-            $idascQuery = "SELECT * FROM student1,department where student1.dept_id='$sortingPage' AND department.dept_id=student1.dept_id ORDER BY student1.studid ASC";
+            $idascQuery = "SELECT * FROM student1,department where student1.dept_id='$sortingPage' AND department.dept_id=student1.dept_id ORDER BY student1.studid ASC LIMIT " . $initial_page . ',' . $limit;
             $result = WebContent::executeQuery($idascQuery);
         } elseif (isset($_POST['idDesc'])) {
-            $iddescQuery = "SELECT * FROM student1,department where student1.dept_id='$sortingPage' AND department.dept_id=student1.dept_id ORDER BY student1.studid DESC";
+            $iddescQuery = "SELECT * FROM student1,department where student1.dept_id='$sortingPage' AND department.dept_id=student1.dept_id ORDER BY student1.studid DESC LIMIT " . $initial_page . ',' . $limit;
             $result = WebContent::executeQuery($iddescQuery);
         } elseif (isset($_POST['nameAsc'])) {
-            $namedescQuery = "SELECT * FROM student1,department where student1.dept_id='$sortingPage' AND department.dept_id=student1.dept_id ORDER BY student1.studName ASC";
+            $namedescQuery = "SELECT * FROM student1,department where student1.dept_id='$sortingPage' AND department.dept_id=student1.dept_id ORDER BY student1.studName ASC LIMIT " . $initial_page . ',' . $limit;
             $result = WebContent::executeQuery($namedescQuery);
         } elseif (isset($_POST['nameDesc'])) {
-            $namedescQuery = "SELECT * FROM student1,department where student1.dept_id='$sortingPage' AND department.dept_id=student1.dept_id ORDER BY student1.studName DESC";
+            $namedescQuery = "SELECT * FROM student1,department where student1.dept_id='$sortingPage' AND department.dept_id=student1.dept_id ORDER BY student1.studName DESC LIMIT " . $initial_page . ',' . $limit;
             $result = WebContent::executeQuery($namedescQuery);
         }
     } else {
         if (isset($_POST['idAsc'])) {
-            $idascQuery = "SELECT * FROM student1,department where student1.dept_id=department.dept_id ORDER BY student1.studid ASC";
+            $idascQuery = "SELECT * FROM student1,department where student1.dept_id=department.dept_id ORDER BY student1.studid ASC  LIMIT " . $initial_page . ',' . $limit;
             $result = WebContent::executeQuery($idascQuery);
         } elseif (isset($_POST['idDesc'])) {
-            $iddescQuery = "SELECT * FROM student1,department where student1.dept_id=department.dept_id ORDER BY student1.studid DESC";
+            $iddescQuery = "SELECT * FROM student1,department where student1.dept_id=department.dept_id ORDER BY student1.studid DESC  LIMIT " . $initial_page . ',' . $limit;
             $result = WebContent::executeQuery($iddescQuery);
         } elseif (isset($_POST['nameAsc'])) {
-            $namedescQuery = "SELECT * FROM student1,department where student1.dept_id=department.dept_id ORDER BY student1.studName ASC";
+            $namedescQuery = "SELECT * FROM student1,department where student1.dept_id=department.dept_id ORDER BY student1.studName ASC  LIMIT " . $initial_page . ',' . $limit;
             $result = WebContent::executeQuery($namedescQuery);
         } elseif (isset($_POST['nameDesc'])) {
-            $namedescQuery = "SELECT * FROM student1,department where student1.dept_id=department.dept_id ORDER BY student1.studName DESC";
+            $namedescQuery = "SELECT * FROM student1,department where student1.dept_id=department.dept_id ORDER BY student1.studName DESC  LIMIT " . $initial_page . ',' . $limit;
             $result = WebContent::executeQuery($namedescQuery);
         }
     }
@@ -42,24 +59,76 @@ function sorting($sortingPage = null)
 }
 
 
+//pagination snnipet code start---------->
+$totalPage = ceil($totalRows / $limit);
 
+if (!isset($_GET['pagination'])) {
+    $page_number = 1;
+} else {
+    $page_number = $_GET['pagination'];
+}
+
+$initial_page = ($page_number - 1) * $limit;
+
+if (isset($_GET['dept'])) {
+    $dept_get_id = $_GET['dept'];
+    $simpleQuery = "SELECT * FROM student1,department where student1.dept_id='$dept_get_id' AND department.dept_id=student1.dept_id LIMIT " . $initial_page . ',' . $limit;
+    $result = WebContent::executeQuery($simpleQuery);
+}
 if (isset($_POST['idAsc']) || isset($_POST['idDesc']) || isset($_POST['nameAsc']) || isset($_POST['nameDesc'])) {
     $dept = null;
     if (isset($_GET['dept'])) {
         $dept = $_GET['dept'];
-        $result = sorting($dept);
+        $result = sorting($dept, $initial_page, $limit);
     } else {
-        $result = sorting($dept);
+        $result = sorting($dept, $initial_page, $limit);
     }
-} elseif (isset($_GET['dept'])) {
-    $dept_get_id = $_GET['dept'];
-    $simpleQuery = "SELECT * FROM student1,department where student1.dept_id='$dept_get_id' AND department.dept_id=student1.dept_id";
-    $result = WebContent::executeQuery($simpleQuery);
-
 } else {
-    $simpleQuery = "SELECT * FROM student1,department where student1.dept_id=department.dept_id";
+    $simpleQuery = "SELECT * FROM student1,department where student1.dept_id=department.dept_id LIMIT " . $initial_page . ',' . $limit;
+
     $result = WebContent::executeQuery($simpleQuery);
 }
+
+
+// if (isset($_POST['idAsc']) || isset($_POST['idDesc']) || isset($_POST['nameAsc']) || isset($_POST['nameDesc'])) {
+//     $dept = null;
+//     if (isset($_GET['dept'])) {
+//         $dept = $_GET['dept'];
+//         $result = sorting($dept);
+//     } else {
+//         $result = sorting($dept);
+//     }
+// } elseif (isset($_GET['dept'])) {
+//     $dept_get_id = $_GET['dept'];
+//     $simpleQuery = "SELECT * FROM student1,department where student1.dept_id='$dept_get_id' AND department.dept_id=student1.dept_id";
+//     $resultNonPage = WebContent::executeQuery($simpleQuery);
+//     $totalRows = mysqli_num_rows($resultNonPage);
+// } else {
+//     $simpleQuery = "SELECT * FROM student1,department where student1.dept_id=department.dept_id ";
+//     $resultNonPage = WebContent::executeQuery($simpleQuery);
+//     $totalRows = mysqli_num_rows($resultNonPage);
+
+// }
+
+// $totalPage = ceil($totalRows / $limit);
+
+// if (!isset($_GET['pagination'])) {
+//     $page_number = 1;
+// } else {
+//     $page_number = $_GET['pagination'];
+// }
+
+// $initial_page = ($page_number - 1) * $limit;
+// if (isset($_GET['dept'])) {
+//     $dept_get_id = $_GET['dept'];
+//     $simpleQuery = "SELECT * FROM student1,department where student1.dept_id='$dept_get_id' AND department.dept_id=student1.dept_id LIMIT " . $initial_page . ',' . $limit;
+//     $result = WebContent::executeQuery($simpleQuery);
+// } else {
+//     $simpleQuery = "SELECT * FROM student1,department where student1.dept_id=department.dept_id LIMIT " . $initial_page . ',' . $limit;
+
+//     $result = WebContent::executeQuery($simpleQuery);
+// }
+
 
 if (isset($_POST["deleteuser"]) && isset($_POST["user_id"]) && $_POST["user_id"] > 0) {
     $sql = "delete from student1 where studid = " . $_POST["user_id"];
@@ -188,8 +257,19 @@ if (isset($_POST["deleteuser"]) && isset($_POST["user_id"]) && $_POST["user_id"]
                 </tbody>
             </table>
         </form>
+        <?php
+        for ($page_number = 1; $page_number <= $totalPage; $page_number++) {
+            if (isset($_GET["dept"])) {
+                echo "<a class='btn btn-sm btn-info mx-1' href = 'index.php?dept=" . $_GET["dept"] . "&pagination=" . $page_number . "'>$page_number</a>";
+            } else {
+                echo "<a class='btn btn-sm btn-info mx-1' href = 'index.php?pagination=" . $page_number . "'>$page_number</a>";
+
+            }
+        }
+
+        ?>
     </div>
-    <?php // include('body/studentCard.php') ?>
+    <?php ?>
 </div>
 
 <script>

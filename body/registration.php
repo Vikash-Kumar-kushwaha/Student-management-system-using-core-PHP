@@ -19,9 +19,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     //     $sid = test_input($_POST["Studid"]);
     // }
     $fileName = $_FILES['file']['name'];
+    $fileTemp = $_FILES['file']['tmp_name'];
     $allowed_types = array('pdf');
     $profileFile = $_FILES['profilepic']['name'];
     $profileFileTemp = $_FILES['profilepic']['tmp_name'];
+
+    print_r($fileName);
+    print_r($fileTemp);
+
+    print_r($profileFile);
+    print_r($profileFileTemp);
+
+    echo "<br><br><br>";
 
     if (empty($_POST["FullName"])) {
         $fNameErr = "* Student Full Name Required";
@@ -114,24 +123,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $list[] = $localLocat;
                 $folderLocation = implode(",", $list);
                 move_uploaded_file($fileTemp, $localLocat);
+            } else {
+                $folderLocationErr = "file type doesn't supported";
+                $flag = 1;
             }
-            // else {
-            //     $folderLocationErr = "file type doesn't supported";
-            //     $flag = 1;
-            // }
         }
         // echo $folderLocation;
-    }
-    // else {
-    //     $folderLocationErr = "*file required";
-    //     $flag = 1;
+    } else {
+        $folderLocationErr = "*file required";
+        $flag = 1;
 
-    // }
+    }
     if (!empty($profileFile)) {
         $target_file = "./upload/" . basename($profileFile);
         echo $target_file;
         move_uploaded_file($profileFileTemp, $target_file);
     }
+
+    // print_r($fileName);
+    // print_r($fileTemp);
+
+    // print_r($profileFile);
+    // print_r($profileFileTemp);
     //  else {
     //     echo "error in pf upload";
     // }
